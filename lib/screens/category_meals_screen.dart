@@ -1,23 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:meals_app/dummy_data.dart';
+import 'package:meals_app/models/meal.dart';
 import 'package:meals_app/widgets/meal_item.dart';
 
-class CategoryMealsScreen extends StatelessWidget {
+class CategoryMealsScreen extends StatefulWidget {
   // final String categoryId;
   // final String categoryTitle;
+  final List<Meal> availableMeals;
+
+  CategoryMealsScreen(this.availableMeals);
 
   // CategoryMealsScreen(this.categoryId, this.categoryTitle);
   @override
-  Widget build(BuildContext context) {
+  _CategoryMealsScreenState createState() => _CategoryMealsScreenState();
+}
+
+class _CategoryMealsScreenState extends State<CategoryMealsScreen> {
+  String categoryTitle;
+  List<Meal> displayedMeals;
+  @override
+  void initState() {
+    // context included codes will not run ==> initState called before widget build method
+
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
     final routeArgs =
         ModalRoute.of(context).settings.arguments as Map<String, String>;
     final categoryId = routeArgs['id'];
-    final categoryTitle = routeArgs['title'];
-    final categoryMeals = DUMMY_MEALS.where(
+    categoryTitle = routeArgs['title'];
+    displayedMeals = widget.availableMeals.where(
       (meal) {
         return meal.categories.contains(categoryId);
       },
     ).toList();
+    super.didChangeDependencies();
+  }
+
+  void _removeMeal(String mealId) {
+    setState(() {
+      displayedMeals.removeWhere((element) => element.id == mealId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -26,7 +54,7 @@ class CategoryMealsScreen extends StatelessWidget {
       ),
       body: ListView.builder(
         itemBuilder: (ctx, index) {
-          final meal = categoryMeals[index];
+          final meal = displayedMeals[index];
           return MealItem(
             id: meal.id,
             title: meal.title,
@@ -36,7 +64,7 @@ class CategoryMealsScreen extends StatelessWidget {
             affordability: meal.affordability,
           );
         },
-        itemCount: categoryMeals.length,
+        itemCount: displayedMeals.length,
       ),
     );
   }
